@@ -9,15 +9,8 @@
 // Validate command line arguments 
 int read_and_validate(char *argv[], ToviewInfo *view)
 {
-    char *ext;
 
-    //Check -v option
-    if (strcmp(argv[1], "-v") != 0)
-    {
-        return 0;
-    }
-
-    if( strstr(argv[2],".mp3") == 0)
+    if( strstr(argv[2],".mp3") !=NULL)
     {
         view->mp3_fname = argv[2];
         return 1;
@@ -203,7 +196,8 @@ void mp3_view(ToviewInfo *view)
     while (bytes_read < view->tag_size)
     {
         // Read 4 bytes of frame ID
-        if (fread(view->frame_id, 1, 4, view->fptr_mp3_file) != 4)
+        if (fread(view->frame_id, 1, 4,
+                  view->fptr_mp3_file) != 4)
         {
             break;
         }
@@ -218,7 +212,13 @@ void mp3_view(ToviewInfo *view)
 
         read_size(view);  // Read frame size
 
-        skip_flags(view);  // Skip 2 bytes of flags
+        // Stop if frame has no data
+        if (view->size <= 0)
+        {
+            break;
+        }
+
+        skip_flags(view);  // Skip 2 bytes of frame flags
 
         bytes_read = bytes_read + 10;  // Frame header = 10 bytes
 
